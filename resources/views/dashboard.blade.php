@@ -339,6 +339,49 @@
         </div>
     </div>
 </div>
+<div class="w-full mt-10">
+    <h2 class="text-2xl font-semibold mb-4">Change Logs</h2>
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg p-6 h-96 overflow-y-auto">
+        @foreach($logs as $log)
+        <div class="mb-4">
+            <p class="text-sm font-medium text-gray-700">
+                {{ $log->user->name }} 
+                <span class="text-gray-500">({{ $log->user->email }})</span> 
+                made a {{ $log->action }} on {{ $log->model }} (ID: {{ $log->model_id }})
+                on {{ \Carbon\Carbon::parse($log->created_at)->setTimezone('Asia/Kolkata')->format('d M Y, h:i A') }}
+            </p>
+            
+            <!-- Display Changes -->
+            <div class="overflow-auto text-xs bg-gray-100 p-2 rounded">
+                @php
+                    $changes = json_decode($log->changes);
+                    $before = $changes->before ?? null;
+                    $after = $changes->after ?? null;
+                @endphp
+
+                @if($before && $after)
+                    @foreach($before as $key => $value)
+                        @if($key !== 'created_at' && $key !== 'updated_at')
+                            @if($value != $after->$key)
+                                <p><strong>{{ ucfirst($key) }}:</strong> Changed from "{{ $value }}" to "{{ $after->$key }}"</p>
+                            @else
+                                <p><strong>{{ ucfirst($key) }}:</strong> No change (remained "{{ $value }}")</p>
+                            @endif
+                        @endif
+                    @endforeach
+                @elseif($before)
+                    <p><strong>Data before deletion:</strong></p>
+                    @foreach($before as $key => $value)
+                        <p><strong>{{ ucfirst($key) }}:</strong> "{{ $value }}"</p>
+                    @endforeach
+                @else
+                    <p>No before and after data available for this log entry.</p>
+                @endif
+            </div>
+        </div>
+        @endforeach
+    </div>
+</div>
 
         </div>
     </div>

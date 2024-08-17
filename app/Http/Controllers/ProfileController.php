@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\ChangeLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,13 +27,22 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $originalData = $user->toArray();
+        
+        $user->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
+
+        // Log the update
+        $this->logChange('User', $user->id, 'updated', [
+            'before' => $originalData,
+            'after' => $user->toArray()
+        ]);
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
@@ -47,6 +57,7 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+        $originalData = $user->toArray();
 
         Auth::logout();
 
@@ -55,6 +66,23 @@ class ProfileController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        // Log the deletion
+        $this->logChange('User', $user->id, 'deleted', $originalData);
+
         return Redirect::to('/');
+    }
+
+    /**
+     * Log changes made to the user profile.
+     */
+    protected function logChange($model, $modelId, $action, $changes)
+    {
+        ChangeLog::create([
+            'user_id' => Auth::id(),
+            'model' => $model,
+            'model_id' => $modelId,
+            'action' => $action,
+            'changes' => json_encode($changes),
+        ]);
     }
 }
