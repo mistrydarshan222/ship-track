@@ -49,7 +49,7 @@ jobs:
     - name: 📂 Sync files
       uses: SamKirkland/FTP-Deploy-Action@4.0.0
       with:
-        server: ftp.theinfohub.xyz
+        server: ftp.dfast.site
         username: ship@dfast.site
         password: Np*+3glvdxRl
         server-dir: /
