@@ -102,5 +102,6 @@ class PurchaseController extends Controller
             'action' => $action,
             'changes' => json_encode($changes),
         ]);
+        
     }
 }
