@@ -11,6 +11,9 @@ jobs:
     - name: 🚚 Get latest code
       uses: actions/checkout@v2
 
+    - name: PHP version
+      run: php -v
+
     - name: Install Dependencies
       run: composer update --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
